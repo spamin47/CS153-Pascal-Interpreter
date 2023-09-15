@@ -1,0 +1,10 @@
+program TestRepeat;
+
+begin
+    i := 1;
+    j := 2;
+    REPEAT
+        j := i;
+        k := i;
+    UNTIL i <= j;
+end.
