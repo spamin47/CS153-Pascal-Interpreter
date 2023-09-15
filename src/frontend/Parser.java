@@ -89,7 +89,7 @@ public class Parser
         statementStarters.add(REPEAT);
         statementStarters.add(Token.TokenType.WRITE);
         statementStarters.add(Token.TokenType.WRITELN);
-        
+
         // Tokens that can immediately follow a statement.
         statementFollowers.add(SEMICOLON);
         statementFollowers.add(END);
@@ -121,6 +121,7 @@ public class Parser
             case IDENTIFIER : stmtNode = parseAssignmentStatement(); break;
             case BEGIN :      stmtNode = parseCompoundStatement();   break;
             case REPEAT :     stmtNode = parseRepeatStatement();     break;
+            case WHILE :      stmtNode = parseWhileStatement();      break;
             case WRITE :      stmtNode = parseWriteStatement();      break;
             case WRITELN :    stmtNode = parseWritelnStatement();    break;
             case SEMICOLON :  stmtNode = null; break;  // empty statement
@@ -184,6 +185,7 @@ private Node parseAssignmentStatement()
     
     private void parseStatementList(Node parentNode, Token.TokenType terminalType)
     {
+
         while (   (currentToken.type != terminalType) 
                && (currentToken.type != END_OF_FILE))
         {
@@ -238,24 +240,32 @@ private Node parseAssignmentStatement()
 
         // Create a LOOP node.
         Node loopNode = new Node(LOOP);
-        currentToken = scanner.nextToken();  // consume REPEAT
+        currentToken = scanner.nextToken();  // consume WHILE
 
-        parseStatementList(loopNode, UNTIL);
 
-        if (currentToken.type == UNTIL)
-        {
-            // Create a TEST node. It adopts the test   node.
+            // Create a TEST node. It adopts the test node.
             Node testNode = new Node(TEST);
+            // Create a NOT node. TEST node adopts the NOT node since while condition conversed to until condition
+            Node notNode = new Node(Node.NodeType.NOT);
+            testNode.adopt(notNode);
+
+
             lineNumber = currentToken.lineNumber;
             testNode.lineNumber = lineNumber;
-            currentToken = scanner.nextToken();  // consume UNTIL
 
-            testNode.adopt(parseExpression());
+            notNode.adopt(parseExpression());
 
-            // The LOOP node adopts the TEST node as its final child.
+            // The LOOP node adopts the TEST node.
             loopNode.adopt(testNode);
+
+
+        if(currentToken.type == DO){
+            currentToken = scanner.nextToken();  // consume DO
+        }else{
+            syntaxError("Expecting DO");
         }
-        else syntaxError("Expecting UNTIL");
+        // The LOOP node adopts the COMPOUND node as its final child.
+        loopNode.adopt(parseCompoundStatement());
 
         return loopNode;
     }
@@ -309,11 +319,17 @@ private Node parseAssignmentStatement()
         else if (   (currentToken.type == CHARACTER)
                  || (currentToken.type == STRING))
         {
+//            if(node.type == Node.NodeType.WRITE){
+//                System.out.print(currentToken.text.substring(1,currentToken.text.length()-1));
+//            }else if(node.type == Node.NodeType.WRITELN){
+//                System.out.println(currentToken.text.substring(1,currentToken.text.length()-1));
+//            }
             node.adopt(parseStringConstant());
             hasArgument = true;
         }
         else syntaxError("Invalid WRITE or WRITELN statement");
-        
+
+
         // Look for a field width and a count of decimal places.
         if (hasArgument)
         {

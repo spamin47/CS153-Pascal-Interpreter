@@ -1,10 +1,11 @@
 program TestRepeat;
 
 begin
-    i := 1;
+    i := 4;
     j := 2;
     REPEAT
-        j := i;
+        i := i -1;
+        write('hello');
         k := i;
     UNTIL i <= j;
 end.

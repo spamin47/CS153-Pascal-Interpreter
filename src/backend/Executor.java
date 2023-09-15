@@ -42,6 +42,7 @@ public class Executor
     
     public Object visit(Node node)
     {
+//        System.out.println(node.type);
         switch (node.type)
         {
             case PROGRAM :  return visitProgram(node);
@@ -53,6 +54,8 @@ public class Executor
             case WRITELN :  return visitStatement(node);
             
             case TEST:      return visitTest(node);
+
+            case NOT:       return visitNot(node);
             
             default :       return visitExpression(node);
         }
@@ -123,6 +126,11 @@ public class Executor
     private Object visitTest(Node testNode)
     {
         return (Boolean) visit(testNode.children.get(0));
+    }
+    //negate this node's children
+    private Object visitNot(Node notNode)
+    {
+        return !(Boolean) visit(notNode.children.get(0));
     }
     
     private Object visitWrite(Node writeNode)
@@ -197,11 +205,10 @@ public class Executor
                 default: return null;
             }
         }
-        
         // Binary expressions.
         double value1 = (Double) visit(expressionNode.children.get(0));
         double value2 = (Double) visit(expressionNode.children.get(1));
-        
+
         // Relational expressions.
         if (relationals.contains(expressionNode.type))
         {
@@ -218,6 +225,7 @@ public class Executor
                 
                 default : break;
             }
+//            System.out.println(value);
             
             return value;
         }
