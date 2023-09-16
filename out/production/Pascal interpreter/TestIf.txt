@@ -78,10 +78,5 @@ begin
     x := i + j + k - x - y;
     write('x = '); writeln(x:5:2);
 
-    writeln;
-    if not (i = j) and (i < j) and (i <> j) and (x < y) then write('Good-bye');
-    if not (i < j) or (x <> y) then if i > j/2 then if i <> j then if x < 5*y then write(', world!');
-
-    writeln;
-    writeln('Done!');
+  
 end.

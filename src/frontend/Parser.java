@@ -109,6 +109,7 @@ public class Parser
         
         termOperators.add(STAR);
         termOperators.add(SLASH);
+        termOperators.add(Token.TokenType.AND); // idk
     }
     
     private Node parseStatement()
@@ -440,7 +441,7 @@ private Node parseIfStatement(){
         while (simpleExpressionOperators.contains(currentToken.type))
         {
             Node opNode = currentToken.type == PLUS ? new Node(ADD)
-                    :currentToken.type == DIV ? new Node(DIVIDE)
+
                                                     : new Node(SUBTRACT);
             
             currentToken = scanner.nextToken();  // consume the operator
@@ -468,6 +469,8 @@ private Node parseIfStatement(){
         while (termOperators.contains(currentToken.type))
         {
             Node opNode = currentToken.type == STAR ? new Node(MULTIPLY)
+                    :currentToken.type == DIV ? new Node(DIVIDE)
+                    :currentToken.type == Token.TokenType.AND ? new Node(Node.NodeType.AND)
                                                     : new Node(DIVIDE);
             
             currentToken = scanner.nextToken();  // consume the operator

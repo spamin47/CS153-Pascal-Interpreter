@@ -46,6 +46,7 @@ public class Token
         reservedWords.put("div",       TokenType.DIV);
         reservedWords.put("MOD",       TokenType.MOD);
         reservedWords.put("AND",       TokenType.AND);
+        reservedWords.put("and",       TokenType.AND);
         reservedWords.put("OR",        TokenType.OR);
         reservedWords.put("NOT",       TokenType.NOT);
         reservedWords.put("not",       TokenType.NOT);
