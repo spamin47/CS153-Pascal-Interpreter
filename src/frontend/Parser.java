@@ -105,6 +105,7 @@ public class Parser
         
         simpleExpressionOperators.add(PLUS);
         simpleExpressionOperators.add(MINUS);
+        simpleExpressionOperators.add(DIV);
         
         termOperators.add(STAR);
         termOperators.add(SLASH);
@@ -414,6 +415,7 @@ private Node parseIfStatement(){
             // The relational operator node adopts the first simple expression
             // node as its first child and the second simple expression node
             // as its second child. Then it becomes the expression's root node.
+
             if (opNode != null)
             {
                 opNode.adopt(exprNode);
@@ -434,9 +436,11 @@ private Node parseIfStatement(){
         
         // Keep parsing more terms as long as the current token
         // is a + or - operator.
+
         while (simpleExpressionOperators.contains(currentToken.type))
         {
             Node opNode = currentToken.type == PLUS ? new Node(ADD)
+                    :currentToken.type == DIV ? new Node(DIVIDE)
                                                     : new Node(SUBTRACT);
             
             currentToken = scanner.nextToken();  // consume the operator
