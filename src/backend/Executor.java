@@ -99,7 +99,7 @@ public class Executor
         if(value){
             visit(ifNode.children.get(1));
         }else{
-            if(ifNode.children.size() >= 3){
+            if(ifNode.children.size() >= 3){ //if children size is less than 3 then there's no ELSE statement
                 visit(ifNode.children.get(ifNode.children.size()-1));
             }
         }

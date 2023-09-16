@@ -178,9 +178,19 @@ private Node parseIfStatement(){
 
         ifNode.adopt(parseStatement()); //first condition (if true...)
 
-        if(currentToken.type == Token.TokenType.ELSE){
+        while(currentToken.type == Token.TokenType.ELSE){
             currentToken = scanner.nextToken(); //consume ELSE
-            ifNode.adopt(parseStatement());
+
+            //check for else ifs'
+            if(currentToken.type == Token.TokenType.IF){
+                currentToken = scanner.nextToken(); //consume IF
+                ifNode.adopt(parseExpression());
+                currentToken = scanner.nextToken(); //consume THEN
+                ifNode.adopt(parseStatement());
+            }else{//handle else
+                ifNode.adopt(parseStatement());
+            }
+
         }
 
         return ifNode;
@@ -338,11 +348,7 @@ private Node parseIfStatement(){
         else if (   (currentToken.type == CHARACTER)
                  || (currentToken.type == STRING))
         {
-//            if(node.type == Node.NodeType.WRITE){
-//                System.out.print(currentToken.text.substring(1,currentToken.text.length()-1));
-//            }else if(node.type == Node.NodeType.WRITELN){
-//                System.out.println(currentToken.text.substring(1,currentToken.text.length()-1));
-//            }
+
             node.adopt(parseStringConstant());
             hasArgument = true;
         }
@@ -481,6 +487,7 @@ private Node parseIfStatement(){
         else if (currentToken.type == INTEGER)    return parseIntegerConstant();
         else if (currentToken.type == REAL)       return parseRealConstant();
         else if(currentToken.type == MINUS)       return parseNegate();
+        else if(currentToken.type == Token.TokenType.NOT) return parseNot();
         else if (currentToken.type == LPAREN)
         {
             currentToken = scanner.nextToken();  // consume (
@@ -498,11 +505,19 @@ private Node parseIfStatement(){
         else syntaxError("Unexpected token at parseFactor " + currentToken.type );
         return null;
     }
+
+    private Node parseNot(){
+        Node notNode = new Node(Node.NodeType.NOT);
+        currentToken = scanner.nextToken();// consume 'NOT'
+        notNode.adopt(parseExpression());
+
+        return notNode;
+    }
     private Node parseNegate(){
+
         Node negateNode = new Node(Node.NodeType.NEGATE);
         currentToken = scanner.nextToken();// consume '-'
         negateNode.adopt(parseFactor());
-
 
         return negateNode;
     }
