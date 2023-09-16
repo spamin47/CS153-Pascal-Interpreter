@@ -37,6 +37,7 @@ public class Executor
         relationals.add(GE);
         relationals.add(GT);
         relationals.add(NE);
+
     }
     
     public Executor() {}
@@ -256,7 +257,6 @@ public class Executor
             case ADD :      value = value1 + value2; break;
             case SUBTRACT : value = value1 - value2; break;
             case MULTIPLY : value = value1 * value2; break;
-                
             case DIVIDE :
             {
                 if (value2 != 0.0) value = value1/value2;
