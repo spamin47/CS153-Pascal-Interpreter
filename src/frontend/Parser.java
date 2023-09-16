@@ -124,15 +124,16 @@ public class Parser
             case WHILE :      stmtNode = parseWhileStatement();      break;
             case WRITE :      stmtNode = parseWriteStatement();      break;
             case WRITELN :    stmtNode = parseWritelnStatement();    break;
+            case IF:          stmtNode = parseIfStatement(); break;
             case SEMICOLON :  stmtNode = null; break;  // empty statement
             
-            default : syntaxError("Unexpected token");
+            default : syntaxError("Unexpected token at parseStatement");
         }
         
         if (stmtNode != null) stmtNode.lineNumber = savedLineNumber;
         return stmtNode;
     }
-    
+
 private Node parseAssignmentStatement()
 {
     // The current token should now be the left-hand-side variable name.
@@ -165,7 +166,25 @@ private Node parseAssignmentStatement()
     
     return assignmentNode;
 }
-    
+
+private Node parseIfStatement(){
+        Node ifNode = new Node(Node.NodeType.IF);
+        lineNumber = currentToken.lineNumber;
+        ifNode.lineNumber = lineNumber;
+        currentToken = scanner.nextToken(); //consume IF
+
+        ifNode.adopt(parseExpression());
+        currentToken = scanner.nextToken(); //consume THEN
+
+        ifNode.adopt(parseStatement()); //first condition (if true...)
+
+        if(currentToken.type == Token.TokenType.ELSE){
+            currentToken = scanner.nextToken(); //consume ELSE
+            ifNode.adopt(parseStatement());
+        }
+
+        return ifNode;
+}
     private Node parseCompoundStatement()
     {
         Node compoundNode = new Node(COMPOUND);
@@ -461,7 +480,7 @@ private Node parseAssignmentStatement()
         if      (currentToken.type == IDENTIFIER) return parseVariable();
         else if (currentToken.type == INTEGER)    return parseIntegerConstant();
         else if (currentToken.type == REAL)       return parseRealConstant();
-        
+        else if(currentToken.type == MINUS)       return parseNegate();
         else if (currentToken.type == LPAREN)
         {
             currentToken = scanner.nextToken();  // consume (
@@ -476,10 +495,17 @@ private Node parseAssignmentStatement()
             return exprNode;
         }
         
-        else syntaxError("Unexpected token");
+        else syntaxError("Unexpected token at parseFactor " + currentToken.type );
         return null;
     }
-    
+    private Node parseNegate(){
+        Node negateNode = new Node(Node.NodeType.NEGATE);
+        currentToken = scanner.nextToken();// consume '-'
+        negateNode.adopt(parseFactor());
+
+
+        return negateNode;
+    }
     private Node parseVariable()
     {
         // The current token should now be an identifier.
