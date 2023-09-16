@@ -29,6 +29,7 @@ public class Executor
         singletons.add(INTEGER_CONSTANT);
         singletons.add(REAL_CONSTANT);
         singletons.add(STRING_CONSTANT);
+        singletons.add(NEGATE);
         
         relationals.add(EQ);
         relationals.add(LT);
@@ -51,12 +52,13 @@ public class Executor
             case ASSIGN :   
             case LOOP : 
             case WRITE :
+            case IF:
             case WRITELN :  return visitStatement(node);
             
             case TEST:      return visitTest(node);
 
             case NOT:       return visitNot(node);
-            
+
             default :       return visitExpression(node);
         }
     }
@@ -78,6 +80,7 @@ public class Executor
             case LOOP :      return visitLoop(statementNode);
             case WRITE :     return visitWrite(statementNode);
             case WRITELN :   return visitWriteln(statementNode);
+            case IF:         return visitIf(statementNode);
             
             default :        return null;
         }
@@ -89,13 +92,27 @@ public class Executor
         
         return null;
     }
+    private Object visitIf(Node ifNode){
+
+        boolean value = (boolean)visit(ifNode.children.get(0));
+
+        if(value){
+            visit(ifNode.children.get(1));
+        }else{
+            if(ifNode.children.size() >= 3){
+                visit(ifNode.children.get(ifNode.children.size()-1));
+            }
+        }
+
+        return null;
+    }
     
     private Object visitAssign(Node assignNode)
     {
         Node lhs = assignNode.children.get(0);
         Node rhs = assignNode.children.get(1);
-        
         // Evaluate the right-hand-side expression;
+
         Double value = (Double) visit(rhs);
         
         // Store the value into the variable's symbol table entry.
@@ -127,7 +144,7 @@ public class Executor
     {
         return (Boolean) visit(testNode.children.get(0));
     }
-    //negate this node's children
+    //! this node's children
     private Object visitNot(Node notNode)
     {
         return !(Boolean) visit(notNode.children.get(0));
@@ -201,6 +218,7 @@ public class Executor
                 case INTEGER_CONSTANT : return visitIntegerConstant(expressionNode);
                 case REAL_CONSTANT    : return visitRealConstant(expressionNode);
                 case STRING_CONSTANT  : return visitStringConstant(expressionNode);
+                case NEGATE           : return visitNegate(expressionNode);
                 
                 default: return null;
             }
@@ -264,6 +282,11 @@ public class Executor
         Double value = variableId.getValue();
         
         return value;
+    }
+
+    //help idk how to negate this properly
+    private Object visitNegate(Node negateNode){
+        return -(double)visitExpression(negateNode.children.get(0));
     }
     
     private Object visitIntegerConstant(Node integerConstantNode)

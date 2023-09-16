@@ -16,9 +16,9 @@ public class Token
         PROGRAM, BEGIN, END, REPEAT, UNTIL, WRITE, WRITELN, 
         DIV, MOD, AND, OR, NOT,
         CONST, TYPE, VAR, PROCEDURE, FUNCTION,
-        WHILE, DO, FOR, TO, DOWNTO, IF, THEN, ELSE, CASE, OF,
+        WHILE, DO, FOR, TO, DOWNTO, IF, THEN, ELSE, CASE, OF, ELSEIF,
         PERIOD, COMMA, COLON, COLON_EQUALS, SEMICOLON,
-        PLUS, MINUS, STAR, SLASH, LPAREN, RPAREN, 
+        PLUS, MINUS, STAR, SLASH, LPAREN, RPAREN, NEGATE,
         EQUALS, NOT_EQUALS, LESS_THAN, LESS_EQUALS, 
         GREATER_THAN, GREATER_EQUALS, DOT_DOT, QUOTE,
         LBRACKET, RBRACKET, CARAT,
@@ -62,6 +62,9 @@ public class Token
         reservedWords.put("WHILE",     TokenType.WHILE);
         reservedWords.put("CASE",      TokenType.CASE);
         reservedWords.put("OF",        TokenType.OF);
+        reservedWords.put("else",      TokenType.ELSE);
+        reservedWords.put("else if", TokenType.ELSEIF);
+        reservedWords.put("-", TokenType.NEGATE);
     }
     
     public TokenType type;       // what type of token
