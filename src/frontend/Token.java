@@ -43,6 +43,7 @@ public class Token
         reservedWords.put("WRITE",     TokenType.WRITE);
         reservedWords.put("WRITELN",   TokenType.WRITELN);
         reservedWords.put("DIV",       TokenType.DIV);
+        reservedWords.put("div",       TokenType.DIV);
         reservedWords.put("MOD",       TokenType.MOD);
         reservedWords.put("AND",       TokenType.AND);
         reservedWords.put("OR",        TokenType.OR);
