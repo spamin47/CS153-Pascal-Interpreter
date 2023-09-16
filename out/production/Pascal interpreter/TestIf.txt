@@ -46,4 +46,23 @@ begin
     write(', y = '); writeln(y:5:2);
 
     k := 10;
+
+    if i = j then i := 33
+             else if not (i <= j) then i := 44
+                                  else if i = j then i := 55
+                                                else i := 6;
+
+    write('i = ');   write(i:3);
+    write(', j = '); write(j:3);
+    write(', x = '); write(x:5:2);
+    write(', y = '); writeln(y:5:2);
+    write('k = ');   writeln(k:3);
+
+
+    write('i = ');   write(i:3);
+    write(', j = '); write(j:3);
+    write(', x = '); write(x:5:2);
+    write(', y = '); writeln(y:5:2);
+    write('k = ');   writeln(k:3);
+
 end.

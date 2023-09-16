@@ -37,6 +37,7 @@ public class Token
         reservedWords.put("PROGRAM",   TokenType.PROGRAM);
         reservedWords.put("BEGIN",     TokenType.BEGIN);
         reservedWords.put("END",       TokenType.END);
+        reservedWords.put("end",       TokenType.END);
         reservedWords.put("REPEAT",    TokenType.REPEAT);
         reservedWords.put("UNTIL",     TokenType.UNTIL);
         reservedWords.put("WRITE",     TokenType.WRITE);
@@ -46,6 +47,7 @@ public class Token
         reservedWords.put("AND",       TokenType.AND);
         reservedWords.put("OR",        TokenType.OR);
         reservedWords.put("NOT",       TokenType.NOT);
+        reservedWords.put("not",       TokenType.NOT);
         reservedWords.put("CONST",     TokenType.CONST);
         reservedWords.put("TYPE",      TokenType.TYPE);
         reservedWords.put("VAR",       TokenType.VAR);
@@ -63,8 +65,8 @@ public class Token
         reservedWords.put("CASE",      TokenType.CASE);
         reservedWords.put("OF",        TokenType.OF);
         reservedWords.put("else",      TokenType.ELSE);
-        reservedWords.put("else if", TokenType.ELSEIF);
-        reservedWords.put("-", TokenType.NEGATE);
+        reservedWords.put("if",        TokenType.IF);
+        reservedWords.put("-",         TokenType.NEGATE);
     }
     
     public TokenType type;       // what type of token
