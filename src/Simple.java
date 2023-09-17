@@ -16,15 +16,15 @@ public class Simple
 {
     public static void main(String args[])
     {
-        if (args.length != 2)
+        /**if (args.length != 2)
         {
             System.out.println("Usage: simple -{scan, parse, execute} " +
                                "sourceFileName");
             System.exit(-1);
-        }
+        }**/
         
-        String operation      = args[0];  // -scan, -parse, or -execute
-        String sourceFileName = args[1];
+        String operation      = "-execute";  // -scan, -parse, or -execute
+        String sourceFileName = "src/TestIf.txt";
         
         Source source = new Source(sourceFileName);
         
