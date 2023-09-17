@@ -170,34 +170,30 @@ private Node parseAssignmentStatement()
 }
 
 private Node parseIfStatement(){
-        Node ifNode = new Node(Node.NodeType.IF);
-        lineNumber = currentToken.lineNumber;
-        ifNode.lineNumber = lineNumber;
-        currentToken = scanner.nextToken(); //consume IF
+    Node ifNode = new Node(Node.NodeType.IF);
+    lineNumber = currentToken.lineNumber;
+    ifNode.lineNumber = currentToken.lineNumber;
+    currentToken = scanner.nextToken(); //consume IF
 
-        ifNode.adopt(parseExpression());
+    ifNode.adopt(parseExpression());
+
+    if(currentToken.type == THEN)
+    {
         currentToken = scanner.nextToken(); //consume THEN
+        ifNode.adopt(parseStatement());
+    }
+    else
+        syntaxError("Expecting THEN");
 
-        ifNode.adopt(parseStatement()); //first condition (if true...)
-
-        while(currentToken.type == Token.TokenType.ELSE){
-            currentToken = scanner.nextToken(); //consume ELSE
-
-            //check for else ifs'
-            if(currentToken.type == Token.TokenType.IF){
-                currentToken = scanner.nextToken(); //consume IF
-                ifNode.adopt(parseExpression());
-                currentToken = scanner.nextToken(); //consume THEN
-                ifNode.adopt(parseStatement());
-            }else{//handle else
-                ifNode.adopt(parseStatement());
-            }
-
-        }
-
-        return ifNode;
+    if(currentToken.type == Token.TokenType.ELSE) // only do this if there is an ELSE
+    {
+        currentToken = scanner.nextToken(); //consume ELSE
+        ifNode.adopt(parseStatement());
+    }
+    return ifNode;
 }
-    private Node parseCompoundStatement()
+    
+private Node parseCompoundStatement()
     {
         Node compoundNode = new Node(COMPOUND);
         compoundNode.lineNumber = currentToken.lineNumber;
