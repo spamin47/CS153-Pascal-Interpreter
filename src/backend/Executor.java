@@ -224,6 +224,18 @@ public class Executor
                 default: return null;
             }
         }
+
+        if(expressionNode.type == AND) {
+            boolean first = (Boolean) visit(expressionNode.children.get(0));
+            boolean second = (Boolean) visit(expressionNode.children.get(0));
+            return first && second;
+        }
+        else if(expressionNode.type == OR) {
+            boolean first = (Boolean) visit(expressionNode.children.get(0));
+            boolean second = (Boolean) visit(expressionNode.children.get(0));
+            return first || second;
+        }
+        
         // Binary expressions.
         double value1 = (Double) visit(expressionNode.children.get(0));
         double value2 = (Double) visit(expressionNode.children.get(1));
