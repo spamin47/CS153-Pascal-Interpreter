@@ -109,7 +109,8 @@ public class Parser
         
         termOperators.add(STAR);
         termOperators.add(SLASH);
-        termOperators.add(Token.TokenType.AND); // idk
+        termOperators.add(Token.TokenType.AND);
+        termOperators.add(Token.TokenType.OR);
     }
     
     private Node parseStatement()
