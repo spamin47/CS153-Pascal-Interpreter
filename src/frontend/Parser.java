@@ -109,7 +109,8 @@ public class Parser
         
         termOperators.add(STAR);
         termOperators.add(SLASH);
-        termOperators.add(Token.TokenType.AND); // idk
+        termOperators.add(Token.TokenType.AND);
+        termOperators.add(Token.TokenType.OR);
     }
     
     private Node parseStatement()
@@ -170,34 +171,30 @@ private Node parseAssignmentStatement()
 }
 
 private Node parseIfStatement(){
-        Node ifNode = new Node(Node.NodeType.IF);
-        lineNumber = currentToken.lineNumber;
-        ifNode.lineNumber = lineNumber;
-        currentToken = scanner.nextToken(); //consume IF
+    Node ifNode = new Node(Node.NodeType.IF);
+    lineNumber = currentToken.lineNumber;
+    ifNode.lineNumber = currentToken.lineNumber;
+    currentToken = scanner.nextToken(); //consume IF
 
-        ifNode.adopt(parseExpression());
+    ifNode.adopt(parseExpression());
+
+    if(currentToken.type == THEN)
+    {
         currentToken = scanner.nextToken(); //consume THEN
+        ifNode.adopt(parseStatement());
+    }
+    else
+        syntaxError("Expecting THEN");
 
-        ifNode.adopt(parseStatement()); //first condition (if true...)
-
-        while(currentToken.type == Token.TokenType.ELSE){
-            currentToken = scanner.nextToken(); //consume ELSE
-
-            //check for else ifs'
-            if(currentToken.type == Token.TokenType.IF){
-                currentToken = scanner.nextToken(); //consume IF
-                ifNode.adopt(parseExpression());
-                currentToken = scanner.nextToken(); //consume THEN
-                ifNode.adopt(parseStatement());
-            }else{//handle else
-                ifNode.adopt(parseStatement());
-            }
-
-        }
-
-        return ifNode;
+    if(currentToken.type == Token.TokenType.ELSE) // only do this if there is an ELSE
+    {
+        currentToken = scanner.nextToken(); //consume ELSE
+        ifNode.adopt(parseStatement());
+    }
+    return ifNode;
 }
-    private Node parseCompoundStatement()
+    
+private Node parseCompoundStatement()
     {
         Node compoundNode = new Node(COMPOUND);
         compoundNode.lineNumber = currentToken.lineNumber;
@@ -471,6 +468,7 @@ private Node parseIfStatement(){
             Node opNode = currentToken.type == STAR ? new Node(MULTIPLY)
                     :currentToken.type == DIV ? new Node(DIVIDE)
                     :currentToken.type == Token.TokenType.AND ? new Node(Node.NodeType.AND)
+                    :currentToken.type == Token.TokenType.OR ? new Node(Node.NodeType.OR)
                                                     : new Node(DIVIDE);
             
             currentToken = scanner.nextToken();  // consume the operator
