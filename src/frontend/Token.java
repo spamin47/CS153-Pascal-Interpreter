@@ -48,6 +48,7 @@ public class Token
         reservedWords.put("AND",       TokenType.AND);
         reservedWords.put("and",       TokenType.AND);
         reservedWords.put("OR",        TokenType.OR);
+        reservedWords.put("or",        TokenType.OR);
         reservedWords.put("NOT",       TokenType.NOT);
         reservedWords.put("not",       TokenType.NOT);
         reservedWords.put("CONST",     TokenType.CONST);
