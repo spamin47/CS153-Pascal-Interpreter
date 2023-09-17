@@ -193,6 +193,65 @@ private Node parseIfStatement(){
     }
     return ifNode;
 }
+
+private Node parseForStatement() {
+    currentToken = scanner.nextToken(); // consume for
+    
+    // compound node
+    Node compound = new Node(COMPOUND);
+
+    // assign
+    Node assign = parseAssignmentStatement();
+    Node variable = assign.children.get(0);
+    compound.adopt(assign);
+
+    // loop
+    Node loop = new Node(LOOP);
+
+    //test
+    Node test = new Node(TEST);
+    Token.TokenType loopType = null;
+    Node operator = null;
+    // node type gt for to and lt for downto
+    if(currentToken.type == TO) {
+        operator = new Node(GT);
+        loopType = TO;
+    } else if(currentToken.type == DOWNTO) {
+        operator = new Node(LT);
+        loopType = DOWNTO;
+    } else if(currentToken.type != DO) scanner.nextToken();
+
+    currentToken = scanner.nextToken();
+    operator.adopt(variable);
+    operator.adopt(parseIntegerConstant());
+    test.adopt(operator);
+    loop.adopt(test);
+
+    // do
+    if(currentToken.type == DO) currentToken = scanner.nextToken();
+    if(currentToken.type == BEGIN) {
+        currentToken = scanner.nextToken();
+        parseStatementList(loop, END); // for compound statements
+        currentToken = scanner.nextToken();
+    } else loop.adopt(parseStatement());
+    
+    // second assign
+    Node assign2 = new Node(ASSIGN);
+    assign2.adopt(variable);
+    // increment/decrement the control variable:
+    // node type add for to and subtract for downto
+    Node modifyVar = loopType == TO ? new Node(ADD)
+            : new Node(SUBTRACT);
+    Node integerConstant = new Node(INTEGER_CONSTANT);
+    integerConstant.value = 1L;
+    modifyVar.adopt(variable);
+    modifyVar.adopt(integerConstant);
+    assign2.adopt(modifyVar);
+        
+    loop.adopt(assign2);
+    compound.adopt(loop);
+    return compound;
+}
     
 private Node parseCompoundStatement()
     {
