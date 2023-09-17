@@ -468,6 +468,7 @@ private Node parseCompoundStatement()
             Node opNode = currentToken.type == STAR ? new Node(MULTIPLY)
                     :currentToken.type == DIV ? new Node(DIVIDE)
                     :currentToken.type == Token.TokenType.AND ? new Node(Node.NodeType.AND)
+                    :currentToken.type == Token.TokenType.OR ? new Node(Node.NodeType.OR)
                                                     : new Node(DIVIDE);
             
             currentToken = scanner.nextToken();  // consume the operator
