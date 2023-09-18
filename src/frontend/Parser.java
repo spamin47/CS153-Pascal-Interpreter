@@ -128,6 +128,7 @@ public class Parser
             case WRITE :      stmtNode = parseWriteStatement();      break;
             case WRITELN :    stmtNode = parseWritelnStatement();    break;
             case IF:          stmtNode = parseIfStatement(); break;
+            case FOR :      stmtNode = parseForStatement();      break;
             case SEMICOLON :  stmtNode = null; break;  // empty statement
             
             default : syntaxError("Unexpected token at parseStatement");
