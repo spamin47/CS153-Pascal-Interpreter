@@ -54,6 +54,7 @@ public class Executor
             case LOOP : 
             case WRITE :
             case IF:
+            case SELECT:
             case WRITELN :  return visitStatement(node);
             
             case TEST:      return visitTest(node);

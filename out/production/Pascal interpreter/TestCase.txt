@@ -1,0 +1,12 @@
+PROGRAM TestCase;
+
+BEGIN
+    i := 3; even := -999; odd := -999; prime := -999;
+
+    CASE i+1 OF
+        5, 7, 4: j := 574*i;
+        's':       j := i;
+        -8:      j := 8*i;
+    END;
+
+END.

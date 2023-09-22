@@ -28,6 +28,7 @@ public class Parser
         this.currentToken = null;
         this.lineNumber = 1;
         this.errorCount = 0;
+
     }
     
     public int errorCount() { return errorCount; }
@@ -127,8 +128,9 @@ public class Parser
             case WHILE :      stmtNode = parseWhileStatement();      break;
             case WRITE :      stmtNode = parseWriteStatement();      break;
             case WRITELN :    stmtNode = parseWritelnStatement();    break;
-            case IF:          stmtNode = parseIfStatement(); break;
-            case FOR :      stmtNode = parseForStatement();      break;
+            case IF:          stmtNode = parseIfStatement();         break;
+            case FOR :        stmtNode = parseForStatement();        break;
+            case CASE:        stmtNode = parseCaseStatement();       break;
             case SEMICOLON :  stmtNode = null; break;  // empty statement
             
             default : syntaxError("Unexpected token at parseStatement");
@@ -169,6 +171,65 @@ private Node parseAssignmentStatement()
     assignmentNode.adopt(rhsNode);
     
     return assignmentNode;
+}
+private Node parseCaseStatement(){
+    Node selectNode = new Node(SELECT); //root of case statement
+    selectNode.lineNumber = currentToken.lineNumber;
+    currentToken = scanner.nextToken(); //consume case
+    selectNode.adopt(parseExpression());
+
+
+    if(currentToken.type == OF){
+        currentToken = scanner.nextToken(); // consume of
+
+        //go through each case expression and add them to the to select node (root node of case)
+        while(currentToken.type!= END){
+            Node selectBranchNode = new Node(SELECT_BRANCH); //root of a case expression
+            selectNode.adopt(selectBranchNode);
+            Node selectConstantsNode = new Node(SELECT_CONSTANTS); //root of case expression's constant(s)
+            selectBranchNode.adopt(selectConstantsNode);
+            System.out.println(currentToken.type);
+            while(currentToken.type != COLON){
+                if(currentToken.type == COMMA){
+                    currentToken = scanner.nextToken();//consume ,
+                }
+                //check whether case is a character or interger
+                if(currentToken.type ==CHARACTER){
+                    Node stringNode = new Node(STRING_CONSTANT);
+                    stringNode.value =currentToken.value;
+                    selectConstantsNode.adopt(stringNode);
+
+                    currentToken = scanner.nextToken(); //consumes character
+
+                }else if(currentToken.type == INTEGER) {
+                    Node intNode = new Node(INTEGER_CONSTANT);
+                    intNode.value = currentToken.value;
+                    selectConstantsNode.adopt(intNode);
+
+                    currentToken = scanner.nextToken(); //consumes integer
+                }else if(currentToken.type == MINUS){
+                    System.out.println("NEGATED");
+                    Node negateNode = new Node(Node.NodeType.NEGATE);
+                    negateNode.value = currentToken.value;
+                    selectConstantsNode.adopt(parseNegate());
+
+                }else syntaxError("invalid case type. Must be character or integer.");
+
+            }
+
+            currentToken = scanner.nextToken(); //consume colon
+            selectBranchNode.adopt(parseStatement());
+            if(currentToken.type == SEMICOLON){
+                currentToken = scanner.nextToken(); //consume ;
+            }
+        }
+        currentToken = scanner.nextToken(); //consume end
+
+
+
+    }else syntaxError("Missing OF");
+
+    return selectNode;
 }
 
 private Node parseIfStatement(){
