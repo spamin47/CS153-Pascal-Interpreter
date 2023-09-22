@@ -83,7 +83,7 @@ public class Executor
             case WRITE :     return visitWrite(statementNode);
             case WRITELN :   return visitWriteln(statementNode);
             case IF:         return visitIf(statementNode);
-            
+            case SELECT:     return visitSelect(statementNode);
             default :        return null;
         }
     }
@@ -92,6 +92,36 @@ public class Executor
     {
         for (Node statementNode : compoundNode.children) visit(statementNode);
         
+        return null;
+    }
+    private Object visitSelect(Node selectNode){
+        Node expression = selectNode.children.get(0);
+        ArrayList<Node> branches = selectNode.children;
+        int branchSize = branches.size();
+
+        Object value = visit(expression); //Grab case expression value
+
+//        System.out.println(value);
+//        System.out.println(branchSize);
+
+        //traverse through branches
+        for(int i = 1;i<branchSize;i++){
+            ArrayList<Node> selectConstants = branches.get(i).children.get(0).children;
+
+            //compare case constants and execute the matching case
+            for(int j = 0;j<selectConstants.size();j++){
+
+//                System.out.print(visit(selectConstants.get(j)) + " ");
+//                System.out.println(value.equals(visit(selectConstants.get(j))));
+                //check if constant match
+                if(value.equals(visit(selectConstants.get(j)))){
+                    visit(branches.get(i).children.get(1));
+                    i = branchSize;
+                    break;
+                }
+            }
+        }
+
         return null;
     }
     private Object visitIf(Node ifNode){

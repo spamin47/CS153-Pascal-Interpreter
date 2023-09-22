@@ -186,16 +186,16 @@ private Node parseCaseStatement(){
 
         //go through each case expression and add them to the to select node (root node of case)
         while(currentToken.type!= END){
-            Node selectBranchNode = new Node(SELECT_BRANCH); //root of a case expression
+            Node selectBranchNode = new Node(SELECT_BRANCH); //root of case expression(s)
             selectNode.adopt(selectBranchNode);
             Node selectConstantsNode = new Node(SELECT_CONSTANTS); //root of case expression's constant(s)
             selectBranchNode.adopt(selectConstantsNode);
-            System.out.println(currentToken.type);
+
             while(currentToken.type != COLON){
                 if(currentToken.type == COMMA){
                     currentToken = scanner.nextToken();//consume ,
                 }
-                //check whether case is a character or interger
+                //check whether case is a character or integer
                 if(currentToken.type ==CHARACTER){
                     Node stringNode = new Node(STRING_CONSTANT);
                     stringNode.value =currentToken.value;
@@ -210,7 +210,6 @@ private Node parseCaseStatement(){
 
                     currentToken = scanner.nextToken(); //consumes integer
                 }else if(currentToken.type == MINUS){
-                    System.out.println("NEGATED");
                     Node negateNode = new Node(Node.NodeType.NEGATE);
                     negateNode.value = currentToken.value;
                     selectConstantsNode.adopt(parseNegate());
@@ -421,7 +420,7 @@ private Node parseCompoundStatement()
         return loopNode;
     }
 
-    private Node parseCaseStatement()
+    private Node parseCaseStatement2()
     {
         // CASE --> EXPRESSION --> OF
         Node caseNode = new Node(Node.NodeType.CASE);
