@@ -129,8 +129,10 @@ public class Parser
             case WRITE :      stmtNode = parseWriteStatement();      break;
             case WRITELN :    stmtNode = parseWritelnStatement();    break;
             case IF:          stmtNode = parseIfStatement();         break;
+
             case FOR :        stmtNode = parseForStatement();        break;
             case CASE:        stmtNode = parseCaseStatement();       break;
+
             case SEMICOLON :  stmtNode = null; break;  // empty statement
             
             default : syntaxError("Unexpected token at parseStatement");
@@ -417,6 +419,63 @@ private Node parseCompoundStatement()
         loopNode.adopt(parseCompoundStatement());
 
         return loopNode;
+    }
+
+    private Node parseCaseStatement()
+    {
+        // CASE --> EXPRESSION --> OF
+        Node caseNode = new Node(Node.NodeType.CASE);
+        caseNode.lineNumber = currentToken.lineNumber;
+        currentToken = scanner.nextToken(); // consume case
+        caseNode.adopt(parseExpression()); // expression
+        currentToken = scanner.nextToken(); // consume of
+
+        // LOOP
+        while(currentToken.type != END)
+        {
+            Node caseLoop = new Node(Node.NodeType.CASE_LOOP);
+            caseLoop.lineNumber = currentToken.lineNumber;;
+            caseLoop.adopt(parseConstantList());
+
+            // CONSTANT LIST --> : --> STATEMENT
+            if(currentToken.type == COLON) currentToken = scanner.nextToken();
+            Node statement = parseStatement();
+            caseLoop.adopt(statement);
+
+            // LOOP FOR CONSTANT LIST --> : --> STATEMENT --> ;
+            if(currentToken.type == SEMICOLON) currentToken = scanner.nextToken();
+            else if(currentToken.type == END) return caseLoop;
+
+            return caseLoop;
+        }
+        currentToken = scanner.nextToken(); // END
+        return caseNode;
+    }
+
+    private Node parseConstantList()
+    {
+        Node constantList = new Node(Node.NodeType.CONSTANT_LIST);
+        constantList.lineNumber = currentToken.lineNumber;
+        // CONSTANT
+        constantList.adopt(parseConstant());
+
+        // loop if theres a comma
+        while(currentToken.type == COMMA)
+        {
+            currentToken = scanner.nextToken(); // consumes comma
+            constantList.adopt(parseConstant()); // CONSTANT
+        }
+        return constantList;
+    }
+
+    private Node parseConstant()
+    {
+        Node constant = new Node(Node.NodeType.CONSTANT);
+        constant.lineNumber = currentToken.lineNumber;
+
+        // the + and -, identifier, number, and string stuff
+
+        return constant;
     }
     
     private Node parseWriteStatement()
