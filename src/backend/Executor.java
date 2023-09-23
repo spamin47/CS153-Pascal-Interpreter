@@ -19,7 +19,8 @@ public class Executor
     
     private static HashSet<Node.NodeType> singletons;
     private static HashSet<Node.NodeType> relationals;
-    
+
+    // Modified in Assignment 2
     static
     {
         singletons  = new HashSet<Node.NodeType>();
@@ -41,10 +42,10 @@ public class Executor
     }
     
     public Executor() {}
-    
+
+    // Modified in Assignment 2
     public Object visit(Node node)
     {
-//        System.out.println(node.type);
         switch (node.type)
         {
             case PROGRAM :  return visitProgram(node);
@@ -56,11 +57,8 @@ public class Executor
             case IF:
             case SELECT:
             case WRITELN :  return visitStatement(node);
-            
             case TEST:      return visitTest(node);
-
             case NOT:       return visitNot(node);
-
             default :       return visitExpression(node);
         }
     }
@@ -70,7 +68,8 @@ public class Executor
         Node compoundNode = programNode.children.get(0);
         return visit(compoundNode);
     }
-    
+
+    // Modified in Assignment 2
     private Object visitStatement(Node statementNode)
     {
         lineNumber = statementNode.lineNumber;
@@ -92,49 +91,6 @@ public class Executor
     {
         for (Node statementNode : compoundNode.children) visit(statementNode);
         
-        return null;
-    }
-
-    private Object visitSelect(Node selectNode){
-        ArrayList<Node> branches = selectNode.children;
-        int branchSize = branches.size();
-
-        //Grab expression value
-        Node expression = selectNode.children.get(0);
-        Object value = visit(expression);
-
-        //traverse through branches
-        for(int i = 1;i<branchSize;i++){
-            ArrayList<Node> selectConstants = branches.get(i).children.get(0).children;
-
-            //compare case constants and execute the matching case
-            for(Node constantNode:selectConstants){
-                //check if constant match
-                if(value.equals(visit(constantNode))){
-                    visit(branches.get(i).children.get(1));
-
-                    //break out of checking expressions
-                    i = branchSize;
-                    break;
-                }
-            }
-
-        }
-
-        return null;
-    }
-    private Object visitIf(Node ifNode){
-
-        boolean value = (boolean)visit(ifNode.children.get(0));
-
-        if(value){
-            visit(ifNode.children.get(1));
-        }else{
-            if(ifNode.children.size() >= 3){ //if children size is less than 3 then there's no ELSE statement
-                visit(ifNode.children.get(ifNode.children.size()-1));
-            }
-        }
-
         return null;
     }
     
@@ -170,7 +126,7 @@ public class Executor
         
         return null;
     }
-    
+
     private Object visitTest(Node testNode)
     {
         return (Boolean) visit(testNode.children.get(0));
@@ -236,6 +192,7 @@ public class Executor
         }
     }
 
+    // Modified in Assignment 2
     private Object visitExpression(Node expressionNode)
     {
 
@@ -255,7 +212,8 @@ public class Executor
             }
         }
 
-        if(expressionNode.type == AND) {
+        // Added in Assignment 2
+        if (expressionNode.type == AND) {
             boolean first = (Boolean) visit(expressionNode.children.get(0));
             boolean second = (Boolean) visit(expressionNode.children.get(0));
             return first && second;
@@ -325,18 +283,13 @@ public class Executor
         
         return value;
     }
-
-    //help idk how to negate this properly
-    private Object visitNegate(Node negateNode){
-        return -(double)visitExpression(negateNode.children.get(0));
-    }
     
     private Object visitIntegerConstant(Node integerConstantNode)
     {
         long value = (Long) integerConstantNode.value;
         return (double) value;
     }
-    
+
     private Object visitRealConstant(Node realConstantNode)
     {
         return (Double) realConstantNode.value;
@@ -345,6 +298,53 @@ public class Executor
     private Object visitStringConstant(Node stringConstantNode)
     {
         return (String) stringConstantNode.value;
+    }
+
+    // Added in Assignment 2
+    private Object visitNegate(Node negateNode){
+        return -(double)visitExpression(negateNode.children.get(0));
+    }
+
+    private Object visitIf(Node ifNode){
+
+        boolean value = (boolean)visit(ifNode.children.get(0));
+
+        if(value){
+            visit(ifNode.children.get(1));
+        }else{
+            if(ifNode.children.size() >= 3){ //if children size is less than 3 then there's no ELSE statement
+                visit(ifNode.children.get(ifNode.children.size()-1));
+            }
+        }
+
+        return null;
+    }
+    
+    private Object visitSelect(Node selectNode){
+        ArrayList<Node> branches = selectNode.children;
+        int branchSize = branches.size();
+
+        //Grab expression value
+        Node expression = selectNode.children.get(0);
+        Object value = visit(expression);
+
+        //traverse through branches
+        for(int i = 1;i<branchSize;i++){
+            ArrayList<Node> selectConstants = branches.get(i).children.get(0).children;
+
+            //compare case constants and execute the matching case
+            for(Node constantNode:selectConstants){
+                //check if constant match
+                if(value.equals(visit(constantNode))){
+                    visit(branches.get(i).children.get(1));
+
+                    //break out of checking expressions
+                    i = branchSize;
+                    break;
+                }
+            }
+        }
+        return null;
     }
 
     private void runtimeError(Node node, String message)

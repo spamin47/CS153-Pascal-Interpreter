@@ -9,6 +9,8 @@ package frontend;
 
 import java.util.HashMap;
 
+// Modified in Assignment 2
+
 public class Token
 {
     public enum TokenType
