@@ -125,11 +125,12 @@ public class Parser
             case IDENTIFIER : stmtNode = parseAssignmentStatement(); break;
             case BEGIN :      stmtNode = parseCompoundStatement();   break;
             case REPEAT :     stmtNode = parseRepeatStatement();     break;
-            case WHILE :      stmtNode = parseWhileStatement();      break;
             case WRITE :      stmtNode = parseWriteStatement();      break;
             case WRITELN :    stmtNode = parseWritelnStatement();    break;
-            case IF:          stmtNode = parseIfStatement();         break;
 
+            // Added in Assignment 2
+            case WHILE :      stmtNode = parseWhileStatement();      break;
+            case IF:          stmtNode = parseIfStatement();         break;
             case FOR :        stmtNode = parseForStatement();        break;
             case CASE:        stmtNode = parseCaseStatement();       break;
 
@@ -173,147 +174,6 @@ private Node parseAssignmentStatement()
     assignmentNode.adopt(rhsNode);
     
     return assignmentNode;
-}
-private Node parseCaseStatement(){
-    Node selectNode = new Node(SELECT); //root of case statement
-    selectNode.lineNumber = currentToken.lineNumber;
-    currentToken = scanner.nextToken(); //consume case
-    selectNode.adopt(parseExpression());
-
-
-    if(currentToken.type == OF){
-        currentToken = scanner.nextToken(); // consume of
-
-        //go through each case expression and add them to the to select node (root node of case)
-        while(currentToken.type!= END){
-            Node selectBranchNode = new Node(SELECT_BRANCH); //root of case expression(s)
-            selectNode.adopt(selectBranchNode);
-            Node selectConstantsNode = new Node(SELECT_CONSTANTS); //root of case expression's constant(s)
-            selectBranchNode.adopt(selectConstantsNode);
-
-            while(currentToken.type != COLON){
-                if(currentToken.type == COMMA){
-                    currentToken = scanner.nextToken();//consume ,
-                }
-                //check whether case is a character or integer
-                if(currentToken.type ==CHARACTER){
-                    Node stringNode = new Node(STRING_CONSTANT);
-                    stringNode.value =currentToken.value;
-                    selectConstantsNode.adopt(stringNode);
-
-                    currentToken = scanner.nextToken(); //consumes character
-
-                }else if(currentToken.type == INTEGER) {
-                    Node intNode = new Node(INTEGER_CONSTANT);
-                    intNode.value = currentToken.value;
-                    selectConstantsNode.adopt(intNode);
-
-                    currentToken = scanner.nextToken(); //consumes integer
-                }else if(currentToken.type == MINUS){
-                    Node negateNode = new Node(Node.NodeType.NEGATE);
-                    negateNode.value = currentToken.value;
-                    selectConstantsNode.adopt(parseNegate());
-
-                }else syntaxError("invalid case type. Must be character or integer.");
-
-            }
-
-            currentToken = scanner.nextToken(); //consume colon
-            selectBranchNode.adopt(parseStatement());
-            if(currentToken.type == SEMICOLON){
-                currentToken = scanner.nextToken(); //consume ;
-            }
-        }
-        currentToken = scanner.nextToken(); //consume end
-
-
-
-    }else syntaxError("Missing OF");
-
-    return selectNode;
-}
-
-private Node parseIfStatement(){
-    Node ifNode = new Node(Node.NodeType.IF);
-    lineNumber = currentToken.lineNumber;
-    ifNode.lineNumber = currentToken.lineNumber;
-    currentToken = scanner.nextToken(); //consume IF
-
-    ifNode.adopt(parseExpression());
-
-    if(currentToken.type == THEN)
-    {
-        currentToken = scanner.nextToken(); //consume THEN
-        ifNode.adopt(parseStatement());
-    }
-    else
-        syntaxError("Expecting THEN");
-
-    if(currentToken.type == Token.TokenType.ELSE) // only do this if there is an ELSE
-    {
-        currentToken = scanner.nextToken(); //consume ELSE
-        ifNode.adopt(parseStatement());
-    }
-    return ifNode;
-}
-
-private Node parseForStatement() {
-    currentToken = scanner.nextToken(); // consume for
-    
-    // compound node
-    Node compound = new Node(COMPOUND);
-
-    // assign
-    Node assign = parseAssignmentStatement();
-    Node variable = assign.children.get(0);
-    compound.adopt(assign);
-
-    // loop
-    Node loop = new Node(LOOP);
-
-    //test
-    Node test = new Node(TEST);
-    Token.TokenType loopType = null;
-    Node operator = null;
-    // node type gt for to and lt for downto
-    if(currentToken.type == TO) {
-        operator = new Node(GT);
-        loopType = TO;
-    } else if(currentToken.type == DOWNTO) {
-        operator = new Node(LT);
-        loopType = DOWNTO;
-    } else if(currentToken.type != DO) scanner.nextToken();
-
-    currentToken = scanner.nextToken();
-    operator.adopt(variable);
-    operator.adopt(parseIntegerConstant());
-    test.adopt(operator);
-    loop.adopt(test);
-
-    // do
-    if(currentToken.type == DO) currentToken = scanner.nextToken();
-    if(currentToken.type == BEGIN) {
-        currentToken = scanner.nextToken();
-        parseStatementList(loop, END); // for compound statements
-        currentToken = scanner.nextToken();
-    } else loop.adopt(parseStatement());
-    
-    // second assign
-    Node assign2 = new Node(ASSIGN);
-    assign2.adopt(variable);
-    // increment/decrement the control variable:
-    // node type add for to and subtract for downto
-    Node modifyVar = loopType == TO ? new Node(ADD)
-            : new Node(SUBTRACT);
-    Node integerConstant = new Node(INTEGER_CONSTANT);
-    integerConstant.value = 1L;
-    modifyVar.adopt(variable);
-    modifyVar.adopt(integerConstant);
-    assign2.adopt(modifyVar);
-        
-    loop.adopt(assign2);
-    compound.adopt(loop);
-    return compound;
 }
     
 private Node parseCompoundStatement()
@@ -383,98 +243,6 @@ private Node parseCompoundStatement()
         else syntaxError("Expecting UNTIL");
         
         return loopNode;
-    }
-    private Node parseWhileStatement()
-    {
-        // The current token should now be WHILE.
-
-        // Create a LOOP node.
-        Node loopNode = new Node(LOOP);
-        currentToken = scanner.nextToken();  // consume WHILE
-
-
-            // Create a TEST node. It adopts the test node.
-            Node testNode = new Node(TEST);
-            // Create a NOT node. TEST node adopts the NOT node since while condition conversed to until condition
-            Node notNode = new Node(Node.NodeType.NOT);
-            testNode.adopt(notNode);
-
-
-            lineNumber = currentToken.lineNumber;
-            testNode.lineNumber = lineNumber;
-
-            notNode.adopt(parseExpression());
-
-            // The LOOP node adopts the TEST node.
-            loopNode.adopt(testNode);
-
-
-        if(currentToken.type == DO){
-            currentToken = scanner.nextToken();  // consume DO
-        }else{
-            syntaxError("Expecting DO");
-        }
-        // The LOOP node adopts the COMPOUND node as its final child.
-        loopNode.adopt(parseCompoundStatement());
-
-        return loopNode;
-    }
-
-    private Node parseCaseStatement2()
-    {
-        // CASE --> EXPRESSION --> OF
-        Node caseNode = new Node(Node.NodeType.CASE);
-        caseNode.lineNumber = currentToken.lineNumber;
-        currentToken = scanner.nextToken(); // consume case
-        caseNode.adopt(parseExpression()); // expression
-        currentToken = scanner.nextToken(); // consume of
-
-        // LOOP
-        while(currentToken.type != END)
-        {
-            Node caseLoop = new Node(Node.NodeType.CASE_LOOP);
-            caseLoop.lineNumber = currentToken.lineNumber;;
-            caseLoop.adopt(parseConstantList());
-
-            // CONSTANT LIST --> : --> STATEMENT
-            if(currentToken.type == COLON) currentToken = scanner.nextToken();
-            Node statement = parseStatement();
-            caseLoop.adopt(statement);
-
-            // LOOP FOR CONSTANT LIST --> : --> STATEMENT --> ;
-            if(currentToken.type == SEMICOLON) currentToken = scanner.nextToken();
-            else if(currentToken.type == END) return caseLoop;
-
-            return caseLoop;
-        }
-        currentToken = scanner.nextToken(); // END
-        return caseNode;
-    }
-
-    private Node parseConstantList()
-    {
-        Node constantList = new Node(Node.NodeType.CONSTANT_LIST);
-        constantList.lineNumber = currentToken.lineNumber;
-        // CONSTANT
-        constantList.adopt(parseConstant());
-
-        // loop if theres a comma
-        while(currentToken.type == COMMA)
-        {
-            currentToken = scanner.nextToken(); // consumes comma
-            constantList.adopt(parseConstant()); // CONSTANT
-        }
-        return constantList;
-    }
-
-    private Node parseConstant()
-    {
-        Node constant = new Node(Node.NodeType.CONSTANT);
-        constant.lineNumber = currentToken.lineNumber;
-
-        // the + and -, identifier, number, and string stuff
-
-        return constant;
     }
     
     private Node parseWriteStatement()
@@ -754,6 +522,252 @@ private Node parseCompoundStatement()
         currentToken = scanner.nextToken();  // consume the string        
         return stringNode;
     }
+
+    // Added in Assignment 2
+
+    private Node parseWhileStatement()
+    {
+        // The current token should now be WHILE.
+
+        // Create a LOOP node.
+        Node loopNode = new Node(LOOP);
+        currentToken = scanner.nextToken();  // consume WHILE
+
+
+        // Create a TEST node. It adopts the test node.
+        Node testNode = new Node(TEST);
+        // Create a NOT node. TEST node adopts the NOT node since while condition conversed to until condition
+        Node notNode = new Node(Node.NodeType.NOT);
+        testNode.adopt(notNode);
+
+
+        lineNumber = currentToken.lineNumber;
+        testNode.lineNumber = lineNumber;
+
+        notNode.adopt(parseExpression());
+
+        // The LOOP node adopts the TEST node.
+        loopNode.adopt(testNode);
+
+
+        if (currentToken.type == DO) currentToken = scanner.nextToken();  // consume DO
+        else syntaxError("Expecting DO");
+
+        // The LOOP node adopts the COMPOUND node as its final child.
+        loopNode.adopt(parseCompoundStatement());
+
+        return loopNode;
+    }
+
+    private Node parseIfStatement()
+    {
+        Node ifNode = new Node(Node.NodeType.IF);
+        lineNumber = currentToken.lineNumber;
+        ifNode.lineNumber = currentToken.lineNumber;
+        currentToken = scanner.nextToken(); //consume IF
+
+        ifNode.adopt(parseExpression());
+
+        if(currentToken.type == THEN)
+        {
+            currentToken = scanner.nextToken(); //consume THEN
+            ifNode.adopt(parseStatement());
+        }
+        else
+            syntaxError("Expecting THEN");
+
+        if (currentToken.type == Token.TokenType.ELSE) // only do this if there is an ELSE
+        {
+            currentToken = scanner.nextToken(); //consume ELSE
+            ifNode.adopt(parseStatement());
+        }
+        return ifNode;
+    }
+
+    private Node parseForStatement()
+    {
+        currentToken = scanner.nextToken(); // consume for
+
+        // compound node
+        Node compound = new Node(COMPOUND);
+
+        // assign
+        Node assign = parseAssignmentStatement();
+        Node variable = assign.children.get(0);
+        compound.adopt(assign);
+
+        // loop
+        Node loop = new Node(LOOP);
+
+        //test
+        Node test = new Node(TEST);
+        Token.TokenType loopType = null;
+        Node operator = null;
+        // node type gt for to and lt for downto
+        if(currentToken.type == TO) {
+            operator = new Node(GT);
+            loopType = TO;
+        }
+        else if(currentToken.type == DOWNTO) {
+            operator = new Node(LT);
+            loopType = DOWNTO;
+        }
+        else if(currentToken.type != DO) {
+            scanner.nextToken();
+        }
+        else syntaxError("expecting TO or DOWNTO");
+
+        currentToken = scanner.nextToken();
+        operator.adopt(variable);
+        operator.adopt(parseIntegerConstant());
+        test.adopt(operator);
+        loop.adopt(test);
+
+        // do
+        if(currentToken.type == DO) currentToken = scanner.nextToken();
+        if(currentToken.type == BEGIN) {
+            currentToken = scanner.nextToken();
+            parseStatementList(loop, END); // for compound statements
+            currentToken = scanner.nextToken();
+        } else loop.adopt(parseStatement());
+
+        // second assign
+        Node assign2 = new Node(ASSIGN);
+        assign2.adopt(variable);
+        // increment/decrement the control variable:
+        // node type add for to and subtract for downto
+        Node modifyVar = loopType == TO ? new Node(ADD)
+                : new Node(SUBTRACT);
+        Node integerConstant = new Node(INTEGER_CONSTANT);
+        integerConstant.value = 1L;
+        modifyVar.adopt(variable);
+        modifyVar.adopt(integerConstant);
+        assign2.adopt(modifyVar);
+
+        loop.adopt(assign2);
+        compound.adopt(loop);
+        return compound;
+    }
+
+    private Node parseCaseStatement()
+    {
+        Node selectNode = new Node(SELECT); //root of case statement
+        selectNode.lineNumber = currentToken.lineNumber;
+        currentToken = scanner.nextToken(); //consume case
+        selectNode.adopt(parseExpression());
+
+        if(currentToken.type == OF)
+        {
+            currentToken = scanner.nextToken(); // consume of
+
+            //go through each case expression and add them to the to select node (root node of case)
+            while(currentToken.type!= END)
+            {
+                Node selectBranchNode = new Node(SELECT_BRANCH); //root of case expression(s)
+                selectNode.adopt(selectBranchNode);
+                Node selectConstantsNode = new Node(SELECT_CONSTANTS); //root of case expression's constant(s)
+                selectBranchNode.adopt(selectConstantsNode);
+
+                while(currentToken.type != COLON)
+                {
+                    if(currentToken.type == COMMA) currentToken = scanner.nextToken();//consume ,
+                    //check whether case is a character or integer
+
+                    if(currentToken.type ==CHARACTER)
+                    {
+                        Node stringNode = new Node(STRING_CONSTANT);
+                        stringNode.value =currentToken.value;
+                        selectConstantsNode.adopt(stringNode);
+
+                        currentToken = scanner.nextToken(); //consumes character
+
+                    }
+                    else if(currentToken.type == INTEGER)
+                    {
+                        Node intNode = new Node(INTEGER_CONSTANT);
+                        intNode.value = currentToken.value;
+                        selectConstantsNode.adopt(intNode);
+
+                        currentToken = scanner.nextToken(); //consumes integer
+                    }
+                    else if(currentToken.type == MINUS)
+                    {
+                        Node negateNode = new Node(Node.NodeType.NEGATE);
+                        negateNode.value = currentToken.value;
+                        selectConstantsNode.adopt(parseNegate());
+                    }
+                    else syntaxError("invalid case type. Must be character or integer.");
+
+                }
+
+                currentToken = scanner.nextToken(); //consume colon
+                selectBranchNode.adopt(parseStatement());
+                if(currentToken.type == SEMICOLON) {
+                    currentToken = scanner.nextToken(); //consume ;
+                }
+            }
+            currentToken = scanner.nextToken(); //consume end
+        }
+        else syntaxError("Missing OF");
+        return selectNode;
+    }
+
+    /**private Node parseCaseStatement2()
+     {
+     // CASE --> EXPRESSION --> OF
+     Node caseNode = new Node(Node.NodeType.CASE);
+     caseNode.lineNumber = currentToken.lineNumber;
+     currentToken = scanner.nextToken(); // consume case
+     caseNode.adopt(parseExpression()); // expression
+     currentToken = scanner.nextToken(); // consume of
+
+     // LOOP
+     while(currentToken.type != END)
+     {
+     Node caseLoop = new Node(Node.NodeType.CASE_LOOP);
+     caseLoop.lineNumber = currentToken.lineNumber;;
+     caseLoop.adopt(parseConstantList());
+
+     // CONSTANT LIST --> : --> STATEMENT
+     if(currentToken.type == COLON) currentToken = scanner.nextToken();
+     Node statement = parseStatement();
+     caseLoop.adopt(statement);
+
+     // LOOP FOR CONSTANT LIST --> : --> STATEMENT --> ;
+     if(currentToken.type == SEMICOLON) currentToken = scanner.nextToken();
+     else if(currentToken.type == END) return caseLoop;
+
+     return caseLoop;
+     }
+     currentToken = scanner.nextToken(); // END
+     return caseNode;
+     }
+
+     private Node parseConstantList()
+     {
+     Node constantList = new Node(Node.NodeType.CONSTANT_LIST);
+     constantList.lineNumber = currentToken.lineNumber;
+     // CONSTANT
+     constantList.adopt(parseConstant());
+
+     // loop if theres a comma
+     while(currentToken.type == COMMA)
+     {
+     currentToken = scanner.nextToken(); // consumes comma
+     constantList.adopt(parseConstant()); // CONSTANT
+     }
+     return constantList;
+     }
+
+     private Node parseConstant()
+     {
+     Node constant = new Node(Node.NodeType.CONSTANT);
+     constant.lineNumber = currentToken.lineNumber;
+
+     // the + and -, identifier, number, and string stuff
+
+     return constant;
+     }**/
 
     private void syntaxError(String message)
     {
