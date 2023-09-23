@@ -76,6 +76,7 @@ public class Parser
     private static HashSet<Token.TokenType> simpleExpressionOperators;
     private static HashSet<Token.TokenType> termOperators;
 
+    // Modified in Assignment 2
     static
     {
         statementStarters = new HashSet<Token.TokenType>();
@@ -458,21 +459,6 @@ private Node parseCompoundStatement()
         return null;
     }
 
-    private Node parseNot(){
-        Node notNode = new Node(Node.NodeType.NOT);
-        currentToken = scanner.nextToken();// consume 'NOT'
-        notNode.adopt(parseExpression());
-
-        return notNode;
-    }
-    private Node parseNegate(){
-
-        Node negateNode = new Node(Node.NodeType.NEGATE);
-        currentToken = scanner.nextToken();// consume '-'
-        negateNode.adopt(parseFactor());
-
-        return negateNode;
-    }
     private Node parseVariable()
     {
         // The current token should now be an identifier.
@@ -525,6 +511,22 @@ private Node parseCompoundStatement()
 
     // Added in Assignment 2
 
+    private Node parseNot(){
+        Node notNode = new Node(Node.NodeType.NOT);
+        currentToken = scanner.nextToken();// consume 'NOT'
+        notNode.adopt(parseExpression());
+
+        return notNode;
+    }
+    private Node parseNegate(){
+
+        Node negateNode = new Node(Node.NodeType.NEGATE);
+        currentToken = scanner.nextToken();// consume '-'
+        negateNode.adopt(parseFactor());
+
+        return negateNode;
+    }
+    
     private Node parseWhileStatement()
     {
         // The current token should now be WHILE.
