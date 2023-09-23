@@ -290,6 +290,15 @@ public class Executor
         return (double) value;
     }
 
+    private Object visitRealConstant(Node realConstantNode)
+    {
+        return (Double) realConstantNode.value;
+    }
+    
+    private Object visitStringConstant(Node stringConstantNode)
+    {
+        return (String) stringConstantNode.value;
+    }
 
     // Added in Assignment 2
     private Object visitNegate(Node negateNode){
@@ -336,16 +345,6 @@ public class Executor
             }
         }
         return null;
-    }
-    
-    private Object visitRealConstant(Node realConstantNode)
-    {
-        return (Double) realConstantNode.value;
-    }
-    
-    private Object visitStringConstant(Node stringConstantNode)
-    {
-        return (String) stringConstantNode.value;
     }
 
     private void runtimeError(Node node, String message)
