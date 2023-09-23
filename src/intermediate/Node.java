@@ -9,6 +9,8 @@ package intermediate;
 
 import java.util.ArrayList;
 
+// Modified in Assignment 2
+
 public class Node
 {
     public enum NodeType
